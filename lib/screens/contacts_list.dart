@@ -1,3 +1,4 @@
+import 'package:bytebank_persist/screens/contact_form.dart';
 import 'package:flutter/material.dart';
 
 class ContactsList extends StatelessWidget {
@@ -23,7 +24,11 @@ class ContactsList extends StatelessWidget {
           ],
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () {},
+          onPressed: () {
+            Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+              return ContactForm();
+            })).then((value) => {debugPrint(value.toString())});
+          },
           child: Icon(Icons.add),
         ));
   }

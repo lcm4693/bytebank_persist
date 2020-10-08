@@ -1,3 +1,4 @@
+import 'package:bytebank_persist/screens/contact_form.dart';
 import 'package:bytebank_persist/screens/dashboard.dart';
 import 'package:flutter/material.dart';
 
