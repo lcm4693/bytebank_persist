@@ -1,6 +1,9 @@
+import 'package:bytebank_persist/components/centered_message.dart';
+import 'package:bytebank_persist/components/progress.dart';
 import 'package:bytebank_persist/database/dao/contact_dao.dart';
 import 'package:bytebank_persist/models/contact.dart';
 import 'package:bytebank_persist/screens/contact_form.dart';
+import 'package:bytebank_persist/screens/transaction_form.dart';
 import 'package:flutter/material.dart';
 
 class ContactsList extends StatefulWidget {
@@ -29,15 +32,8 @@ class ContactsListState extends State<ContactsList> {
                 break;
               case ConnectionState.waiting:
                 debugPrint('Waiting');
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: <Widget>[
-                      CircularProgressIndicator(),
-                      Text('Loading'),
-                    ],
-                  ),
+                return Progress(
+                  message: 'Waiting',
                 );
                 break;
               case ConnectionState.active:
@@ -45,19 +41,25 @@ class ContactsListState extends State<ContactsList> {
                 debugPrint('Active');
                 break;
               case ConnectionState.done:
-                debugPrint('Done: ' + snapshot.data.toString());
+                debugPrint('Done');
                 final List<Contact> contacts = snapshot.data;
                 return ListView.builder(
                   itemBuilder: (context, index) {
                     final Contact contact = contacts[index];
-                    return _ContactItem(contact);
+                    return _ContactItem(
+                      contact,
+                      onClick: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => TransactionForm(contact)));
+                      },
+                    );
                   },
                   itemCount: contacts.length,
                 );
                 break;
             }
 
-            return Text('Unknown error');
+            return CenteredMessage('Unknown error');
           },
         ),
         floatingActionButton: FloatingActionButton(
@@ -77,13 +79,15 @@ class ContactsListState extends State<ContactsList> {
 
 class _ContactItem extends StatelessWidget {
   final Contact contact;
+  final Function onClick;
 
-  _ContactItem(this.contact);
+  _ContactItem(this.contact, {@required this.onClick});
 
   @override
   Widget build(BuildContext context) {
     return Card(
         child: ListTile(
+      onTap: onClick,
       title: Text(
         contact.name,
         style: TextStyle(fontSize: 24.0),

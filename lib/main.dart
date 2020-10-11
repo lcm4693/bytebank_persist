@@ -1,10 +1,14 @@
 import 'package:bytebank_persist/http/webclient.dart';
+import 'package:bytebank_persist/models/contact.dart';
+import 'package:bytebank_persist/models/transaction.dart';
 import 'package:bytebank_persist/screens/dashboard.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+void main() async {
   runApp(ByteBankApp());
-  findAll();
+  // save(Transaction(123.9, Contact(0, 'diego', 1238)));
+  // final List<Transaction> transactions = await findAll();
+  // print(transactions.toString());
 }
 
 class ByteBankApp extends StatelessWidget {
