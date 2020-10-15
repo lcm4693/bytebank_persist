@@ -13,7 +13,10 @@ class Progress extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           CircularProgressIndicator(),
-          Text(message),
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text(message, style: TextStyle(fontSize: 16.0)),
+          ),
         ],
       ),
     );

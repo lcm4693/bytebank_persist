@@ -1,11 +1,12 @@
 import 'package:bytebank_persist/components/centered_message.dart';
 import 'package:bytebank_persist/components/progress.dart';
-import 'package:bytebank_persist/http/webclient.dart';
-import 'package:bytebank_persist/models/contact.dart';
+import 'package:bytebank_persist/http/webclients/transaction_webclient.dart';
 import 'package:bytebank_persist/models/transaction.dart';
 import 'package:flutter/material.dart';
 
 class TransactionsList extends StatelessWidget {
+  final TransactionWebClient _transactionWebClient = TransactionWebClient();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -13,7 +14,7 @@ class TransactionsList extends StatelessWidget {
         title: Text('Transactions'),
       ),
       body: FutureBuilder(
-        future: findAll(),
+        future: _transactionWebClient.findAll(),
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.none:
@@ -44,7 +45,9 @@ class TransactionsList extends StatelessWidget {
                             ),
                           ),
                           subtitle: Text(
-                            transaction.contact.accountNumber.toString(),
+                            transaction.contact.name +
+                                ' - ' +
+                                transaction.contact.accountNumber.toString(),
                             style: TextStyle(
                               fontSize: 16.0,
                             ),

@@ -1,6 +1,3 @@
-import 'package:bytebank_persist/http/webclient.dart';
-import 'package:bytebank_persist/models/contact.dart';
-import 'package:bytebank_persist/models/transaction.dart';
 import 'package:bytebank_persist/screens/dashboard.dart';
 import 'package:flutter/material.dart';
 
@@ -24,6 +21,7 @@ class ByteBankApp extends StatelessWidget {
             textTheme: ButtonTextTheme.primary,
           )),
       home: Dashboard(),
+      // debugShowCheckedModeBanner: false,
     );
   }
 }

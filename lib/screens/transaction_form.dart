@@ -1,7 +1,13 @@
-import 'package:bytebank_persist/http/webclient.dart';
+import 'dart:async';
+
+import 'package:bytebank_persist/components/progress.dart';
+import 'package:bytebank_persist/components/response_dialog.dart';
+import 'package:bytebank_persist/components/transaction_auth_dialog.dart';
+import 'package:bytebank_persist/http/webclients/transaction_webclient.dart';
 import 'package:bytebank_persist/models/contact.dart';
 import 'package:bytebank_persist/models/transaction.dart';
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
 class TransactionForm extends StatefulWidget {
   final Contact contact;
@@ -14,6 +20,10 @@ class TransactionForm extends StatefulWidget {
 
 class _TransactionFormState extends State<TransactionForm> {
   final TextEditingController _valueController = TextEditingController();
+  final TransactionWebClient _transactionWebClient = TransactionWebClient();
+  final String transactionId = Uuid().v4();
+
+  bool _sending = false;
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +37,13 @@ class _TransactionFormState extends State<TransactionForm> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
+              Visibility(
+                child: Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Progress(message: 'Sending...'),
+                ),
+                visible: _sending,
+              ),
               Text(
                 widget.contact.name,
                 style: TextStyle(
@@ -48,7 +65,15 @@ class _TransactionFormState extends State<TransactionForm> {
                 child: TextField(
                   controller: _valueController,
                   style: TextStyle(fontSize: 24.0),
-                  decoration: InputDecoration(labelText: 'Value'),
+                  decoration: InputDecoration(
+                      labelText: 'Value',
+                      enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                              color: Colors.blue[200],
+                              style: BorderStyle.solid,
+                              width: 1.5),
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(15.0)))),
                   keyboardType: TextInputType.numberWithOptions(decimal: true),
                 ),
               ),
@@ -62,13 +87,17 @@ class _TransactionFormState extends State<TransactionForm> {
                       final double value =
                           double.tryParse(_valueController.text);
                       final transactionCreated =
-                          Transaction(value, widget.contact);
+                          Transaction(transactionId, value, widget.contact);
 
-                      save(transactionCreated).then((transact) {
-                        if (transact != null) {
-                          Navigator.pop(context);
-                        }
-                      });
+                      showDialog(
+                          context: context,
+                          builder: (contextDialog) {
+                            return TransactionAuthDialog(
+                              onConfirm: (String password) {
+                                _save(transactionCreated, password, context);
+                              },
+                            );
+                          });
                     },
                   ),
                 ),
@@ -78,5 +107,60 @@ class _TransactionFormState extends State<TransactionForm> {
         ),
       ),
     );
+  }
+
+  void _save(Transaction transactionCreated, String password,
+      BuildContext context) async {
+    Transaction transact = await _send(transactionCreated, password, context);
+    await _showSuccessfulMessage(transact, context);
+  }
+
+  Future _showSuccessfulMessage(
+      Transaction transact, BuildContext context) async {
+    if (transact != null) {
+      await showDialog(
+        context: context,
+        builder: (contextSuccess) {
+          return SuccessDialog('Successful transaction');
+        },
+      );
+      Navigator.pop(context);
+    }
+  }
+
+  Future<Transaction> _send(Transaction transactionCreated, String password,
+      BuildContext context) async {
+    setState(() {
+      _sending = true;
+    });
+    final Transaction transact = await _transactionWebClient
+        .save(transactionCreated, password)
+        .catchError(
+      (e) {
+        _showFailureMessage(context, message: 'Timeout submitting the message');
+      },
+      test: (e) => e is TimeoutException,
+    ).catchError(
+      (e) {
+        _showFailureMessage(context, message: e.message);
+      },
+      test: (e) => e is HttpException,
+    ).catchError((e) {
+      _showFailureMessage(context);
+    }).whenComplete(() {
+      setState(() {
+        _sending = false;
+      });
+    });
+    return transact;
+  }
+
+  void _showFailureMessage(BuildContext context,
+      {String message = 'Unknown Error'}) {
+    showDialog(
+        context: context,
+        builder: (contextFailure) {
+          return FailureDialog(message);
+        });
   }
 }
