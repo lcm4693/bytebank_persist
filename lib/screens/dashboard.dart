@@ -28,14 +28,14 @@ class Dashboard extends StatelessWidget {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        _FeatureItem(
+                        FeatureItem(
                           'Transfer',
                           Icons.monetization_on,
                           onClick: () {
                             _showContactList(context);
                           },
                         ),
-                        _FeatureItem(
+                        FeatureItem(
                           'Transaction feed',
                           Icons.description,
                           onClick: () => _showTransactionsList(context),
@@ -55,20 +55,20 @@ class Dashboard extends StatelessWidget {
       return TransactionsList();
     }));
   }
+
+  void _showContactList(BuildContext context) {
+    Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+      return ContactsList();
+    }));
+  }
 }
 
-void _showContactList(BuildContext context) {
-  Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-    return ContactsList();
-  }));
-}
-
-class _FeatureItem extends StatelessWidget {
+class FeatureItem extends StatelessWidget {
   final String name;
   final IconData icon;
   final Function onClick;
 
-  _FeatureItem(this.name, this.icon, {@required this.onClick})
+  FeatureItem(this.name, this.icon, {@required this.onClick})
       : assert(icon != null),
         assert(name != null),
         assert(onClick != null);
